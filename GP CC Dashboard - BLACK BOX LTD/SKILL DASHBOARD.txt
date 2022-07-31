@@ -1,0 +1,195 @@
+SKILL DASHBOARD - CALL STATISTICS
+
+---------------------
+TODAY
+---------------------
+
+select sum(a.CALLSOFFERED) as 'OFFER', 
+sum(a.ACDCALLS) as 'ACD', 
+sum(a.ABNCALLS) as 'ABN', 
+round((sum(a.ACDTIME) + sum(a.ACWTIME) + sum(a.HOLDTIME))/sum(a.ACDCALLS), 0) as 'AHT',
+round((sum(a.ACDCALLS)/sum(a.CALLSOFFERED))*100, 1) as 'ACR', 
+round((sum(a.ACDCALLS1) + sum(a.ACDCALLS2) + sum(a.ACDCALLS3))/(sum(a.CALLSOFFERED))*100, 1) as 'SL-20', 
+round((sum(a.ACDCALLS1) + sum(a.ACDCALLS2) + sum(a.ACDCALLS3) + sum(a.ACDCALLS4) + sum(a.ACDCALLS5))/(sum(a.CALLSOFFERED))*100, 1) as 'SL-40', 
+round((sum(a.ACDCALLS1) + sum(a.ACDCALLS2) + sum(a.ACDCALLS3) + sum(a.ACDCALLS4) + sum(a.ACDCALLS5) + sum(a.ACDCALLS6) + sum(a.ACDCALLS7) + sum(a.ACDCALLS8) + sum(a.ACDCALLS9))/(sum(a.CALLSOFFERED))*100, 1) as 'SL-90',
+round((sum(a.CALLSOFFERED)/((60*hour(now())) + MINUTE(now()))), 3) as 'Calls/min',
+round((sum(a.CALLSOFFERED)/hour(now())), 1) as 'Calls/hour' from
+(SELECT * FROM DataWarehouse.cms_hskill)a
+right join
+(select * from gxccivr.dim_date)b
+on a.DATE_ID=b.DATE_ID
+where a.DATE_ID = date_format(now(),"%Y%m%d")
+#where UNIX_TIMESTAMP(STR_TO_DATE(concat(a.DATE_ID,a.TIME_15), "%Y%m%d%H%i")) BETWEEN UNIX_TIMESTAMP(date(now())) and UNIX_TIMESTAMP(now())
+
+---------------------
+LAST 3 DAYS
+---------------------
+
+select sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end)/3 as "OFFER",
+sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS else 0 end)/3 as 'ACD', 
+sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ABNCALLS else 0 end)/3 as 'ABN',
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDTIME else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACWTIME else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.HOLDTIME else 0 end) )/sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS else 0 end), 0) as 'AHT', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS else 0 end)/sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'ACR', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS1 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS2 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS3 else 0 end))/(sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-20', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS1 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS2 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS3 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS4 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS5 else 0 end))/(sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-40', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS1 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS2 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS3 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS4 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS5 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS6 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS7 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS8 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS9 else 0 end))/(sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-90',
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end)/((3*60*hour(now())) + MINUTE(now()))),1) as 'Calls/min',
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end)/(hour(now())*3)),1) as 'Calls/hour' from
+(SELECT * FROM DataWarehouse.cms_hskill)a
+right join
+(select * from gxccivr.dim_date)b
+on a.DATE_ID=b.DATE_ID
+where a.DATE_ID Between date_format((date_sub(date(now()),INTERVAL 3 day)),"%Y%m%d") and date_format((date_sub(date(now()),INTERVAL 1 day)),"%Y%m%d")
+#where UNIX_TIMESTAMP(STR_TO_DATE(concat(a.DATE_ID,a.TIME_15), "%Y%m%d%H%i")) BETWEEN UNIX_TIMESTAMP(date_sub(date(now()),INTERVAL 3 day)) and UNIX_TIMESTAMP(date_sub(date(now()),INTERVAL 0 day))
+
+---------------------
+LAST 7 DAYS
+---------------------
+
+select sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end)/7 as "OFFER",
+sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS else 0 end)/7 as 'ACD', 
+sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ABNCALLS else 0 end)/7 as 'ABN',
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDTIME else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACWTIME else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.HOLDTIME else 0 end) )/sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS else 0 end), 0) as 'AHT', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS else 0 end)/sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'ACR', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS1 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS2 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS3 else 0 end))/(sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-20', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS1 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS2 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS3 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS4 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS5 else 0 end))/(sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-40', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS1 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS2 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS3 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS4 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS5 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS6 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS7 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS8 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS9 else 0 end))/(sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-90',
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end)/((7*60*hour(now())) + MINUTE(now()))),1) as 'Calls/min',
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end)/(hour(now())*7)),1) as 'Calls/hour' from
+(SELECT * FROM DataWarehouse.cms_hskill)a
+right join
+(select * from gxccivr.dim_date)b
+on a.DATE_ID=b.DATE_ID
+where a.DATE_ID Between date_format((date_sub(date(now()),INTERVAL 7 day)),"%Y%m%d") and date_format((date_sub(date(now()),INTERVAL 1 day)),"%Y%m%d")
+#where UNIX_TIMESTAMP(STR_TO_DATE(concat(a.DATE_ID,a.TIME_15), "%Y%m%d%H%i")) BETWEEN UNIX_TIMESTAMP(date_sub(date(now()),INTERVAL 3 day)) and UNIX_TIMESTAMP(date_sub(date(now()),INTERVAL 0 day))
+
+
+
+
+PREMIUM SKILL
+
+---------------------
+TODAY
+---------------------
+
+select sum(CALLSOFFERED) as 'OFFER',
+sum(ACDCALLS) as 'ACD',
+sum(ABNCALLS) as 'ABN',
+round((sum(ADT) + sum(ACT) + sum(HT))/sum(ACDCALLS), 0) as 'AHT',
+round((sum(ACDCALLS)/sum(CALLSOFFERED))*100, 1) as 'ACR',
+round((sum(a.ACDCALLS1) + sum(a.ACDCALLS2) + sum(a.ACDCALLS3))/(sum(a.CALLSOFFERED))*100, 1) as 'SL-20',
+round((sum(a.ACDCALLS1) + sum(a.ACDCALLS2) + sum(a.ACDCALLS3) + sum(a.ACDCALLS4) + sum(a.ACDCALLS5))/(sum(a.CALLSOFFERED))*100, 1) as 'SL-40',
+round((sum(a.ACDCALLS1) + sum(a.ACDCALLS2) + sum(a.ACDCALLS3) + sum(a.ACDCALLS4) + sum(a.ACDCALLS5) + sum(a.ACDCALLS6) + sum(a.ACDCALLS7) + sum(a.ACDCALLS8) + sum(a.ACDCALLS9))/(sum(a.CALLSOFFERED))*100, 1) as 'SL-90',
+round((sum(CALLSOFFERED)/((60*hour(now())) + MINUTE(now()))), 1) as 'Calls/min',
+round((sum(CALLSOFFERED)/hour(now())), 1) as 'Calls/hour'
+from
+(
+select sum(a.CALLSOFFERED) as 'CALLSOFFERED',
+sum(a.ACDCALLS) as 'ACDCALLS',
+sum(a.ABNCALLS) as 'ABNCALLS',
+sum(a.ACDTIME) as ADT,
+sum(a.ACWTIME) as ACT,
+sum(a.HOLDTIME) as'HT',
+sum(ACDCALLS1) as ACDCALLS1,
+sum(ACDCALLS2) as ACDCALLS2,
+sum(ACDCALLS3) as ACDCALLS3,
+sum(ACDCALLS4) as ACDCALLS4,
+sum(ACDCALLS5) as ACDCALLS5,
+sum(ACDCALLS6) as ACDCALLS6,
+sum(ACDCALLS7) as ACDCALLS7,
+sum(ACDCALLS8) as ACDCALLS8,
+sum(ACDCALLS9) as ACDCALLS9
+from
+(SELECT * FROM DataWarehouse.cms_hskill)a
+inner join
+(select * from gxccivr.dim_date)b
+on a.DATE_ID=b.DATE_ID
+inner join
+(select * from DataWarehouse.dim_cms_skill)c
+on a.SKILL=c.SKILL
+where a.DATE_ID = date_format(now(),"%Y%m%d")
+#where  UNIX_TIMESTAMP(STR_TO_DATE(concat(a.DATE_ID,a.TIME_15), "%Y%m%d%H%i")) BETWEEN UNIX_TIMESTAMP(date(now())) and UNIX_TIMESTAMP(now())
+and c.SKILLNAME in ($Filter1)
+union
+ 
+select sum(CALLSOFFERED) as 'CALLSOFFERED',
+sum(ACDCALLS) as 'ACDCALLS',
+sum(ABNCALLS) as 'ABNCALLS',
+sum(ACDTIME) as ADT,
+sum(ACWTIME) as ACT,
+sum(HOLDTIME) as'HT',
+0 as ACDCALLS1,0  as ACDCALLS2,0 as ACDCALLS3,0 as ACDCALLS4,0 as ACDCALLS5,
+0 as ACDCALLS6,0 as ACDCALLS7,0 as ACDCALLS8,0  as ACDCALLS9
+from RTFeed.dm_skill
+where SKILL_NAME in ($Filter1)
+) a
+;
+
+---------------------
+LAST 3 DAYS
+---------------------
+
+select sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end)/3 as "OFFER",
+sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS else 0 end)/3 as 'ACD', 
+sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ABNCALLS else 0 end)/3 as 'ABN',
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDTIME else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACWTIME else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.HOLDTIME else 0 end) )/sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS else 0 end), 0) as 'AHT', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS else 0 end)/sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'ACR', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS1 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS2 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS3 else 0 end))/(sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-20', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS1 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS2 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS3 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS4 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS5 else 0 end))/(sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-40', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS1 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS2 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS3 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS4 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS5 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS6 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS7 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS8 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS9 else 0 end))/(sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-90',
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end)/((3*60*hour(now())) + MINUTE(now()))),1) as 'Calls/min',
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end)/(hour(now())*3)),1) as 'Calls/hour' from
+(SELECT * FROM DataWarehouse.cms_hskill)a
+right join
+(select * from gxccivr.dim_date)b
+on a.DATE_ID=b.DATE_ID
+inner join
+(select * from DataWarehouse.dim_cms_skill)c
+on a.SKILL=c.SKILL
+where a.DATE_ID Between date_format((date_sub(date(now()),INTERVAL 3 day)),"%Y%m%d") and date_format((date_sub(date(now()),INTERVAL 1 day)),"%Y%m%d") and c.SKILLNAME in ($Filter1)
+
+---------------------
+LAST 7 DAYS
+---------------------
+
+select sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end)/7 as "OFFER",
+sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS else 0 end)/7 as 'ACD', 
+sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ABNCALLS else 0 end)/7 as 'ABN',
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDTIME else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACWTIME else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.HOLDTIME else 0 end) )/sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS else 0 end), 0) as 'AHT', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS else 0 end)/sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'ACR', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS1 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS2 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS3 else 0 end))/(sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-20', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS1 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS2 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS3 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS4 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS5 else 0 end))/(sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-40', 
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS1 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS2 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS3 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS4 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS5 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS6 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS7 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS8 else 0 end) + sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.ACDCALLS9 else 0 end))/(sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-90',
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end)/((7*60*hour(now())) + MINUTE(now()))),1) as 'Calls/min',
+round((sum(case when a.Time_15 <= (hour(now()) * 100)+(minute(now())) then a.CALLSOFFERED else 0 end)/(hour(now())*7)),1) as 'Calls/hour' from
+(SELECT * FROM DataWarehouse.cms_hskill)a
+right join
+(select * from gxccivr.dim_date)b
+on a.DATE_ID=b.DATE_ID
+inner join
+(select * from DataWarehouse.dim_cms_skill)c
+on a.SKILL=c.SKILL
+where a.DATE_ID Between date_format((date_sub(date(now()),INTERVAL 7 day)),"%Y%m%d") and date_format((date_sub(date(now()),INTERVAL 1 day)),"%Y%m%d") and c.SKILLNAME in ($Filter1)
+
+
+---------------------
+TOTAL COUNT
+---------------------
+
+SELECT (sum(AVAILABLE)+sum(INACW)+sum(INAUX)+sum(ONACD)) as "Login",
+sum(AVAILABLE) as "Idle",
+sum(ONACD) as "Talk",
+sum(INAUX) as "Break"  FROM
+(select * from RTFeed.dm_skill) a
+inner join
+(select * from DataWarehouse.dim_cms_skill) c
+on a.SKILL=c.SKILL
+where c.SKILLNAME in ($Filter1);
+
+
+SELECT (sum(a.TOTALQUEUETIME)/count(*)) as 'Avg Wait', max(a.TOTALQUEUETIME) as 'Max Wait'  from
+(select * FROM DataWarehouse.ech_calldata)a
+inner join
+(select * from DataWarehouse.dim_cms_skill)c
+on a.DISPSPLIT=c.SKILL
+where c.SKILLNAME in ($Filter1) and UNIX_TIMESTAMP(STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i")) BETWEEN UNIX_TIMESTAMP(date(now())) and UNIX_TIMESTAMP(now());

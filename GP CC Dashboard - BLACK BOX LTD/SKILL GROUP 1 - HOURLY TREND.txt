@@ -1,0 +1,138 @@
+----------------------------------------------
+HOURLY TREND - HOURLY CALL STATISTICS
+----------------------------------------------
+
+select concat(STR_TO_DATE(a.DATE_ID, "%Y%m%d")," ") as 'DATE', 
+concat(b.HOURNO," ") as 'HOUR', 
+concat(sum(case when a.CALLSOFFERED IS NOT NULL then a.CALLSOFFERED else 0 end)," ") as 'OFFER', 
+concat(sum(case when a.ACDCALLS IS NOT NULL then a.ACDCALLS else 0 end)," ") as 'ACD', 
+concat(sum(case when a.ABNCALLS IS NOT NULL then a.ABNCALLS else 0 end)," ") as 'ABN', 
+concat(round((sum(case when a.ACDTIME IS NOT NULL then a.ACDTIME else 0 end) + sum(case when a.ACWTIME IS NOT NULL then a.ACWTIME else 0 end) + sum(case when a.HOLDTIME IS NOT NULL then a.HOLDTIME else 0 end))/sum(case when a.ACDCALLS IS NOT NULL then a.ACDCALLS else 0 end), 0)," ") as 'AHT (in sec)',
+round((sum(case when a.ACDCALLS IS NOT NULL then a.ACDCALLS else 0 end)/sum(case when a.CALLSOFFERED IS NOT NULL then a.CALLSOFFERED else 0 end))*100, 1) as 'ACR (%)', 
+round((sum(case when a.ACDCALLS1 IS NOT NULL then a.ACDCALLS1 else 0 end) + sum(case when a.ACDCALLS2 IS NOT NULL then a.ACDCALLS2 else 0 end) + sum(case when a.ACDCALLS3 IS NOT NULL then a.ACDCALLS3 else 0 end))/(sum(case when a.CALLSOFFERED IS NOT NULL then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-20 (%)', 
+round((sum(case when a.ACDCALLS1 IS NOT NULL then a.ACDCALLS1 else 0 end) + sum(case when a.ACDCALLS2 IS NOT NULL then a.ACDCALLS2 else 0 end) + sum(case when a.ACDCALLS3 IS NOT NULL then a.ACDCALLS3 else 0 end) + sum(case when a.ACDCALLS4 IS NOT NULL then a.ACDCALLS4 else 0 end) + sum(case when a.ACDCALLS5 IS NOT NULL then a.ACDCALLS5 else 0 end))/(sum(case when a.CALLSOFFERED IS NOT NULL then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-40 (%)', 
+round((sum(case when a.ACDCALLS1 IS NOT NULL then a.ACDCALLS1 else 0 end) + sum(case when a.ACDCALLS2 IS NOT NULL then a.ACDCALLS2 else 0 end) + sum(case when a.ACDCALLS3 IS NOT NULL then a.ACDCALLS3 else 0 end) + sum(case when a.ACDCALLS4 IS NOT NULL then a.ACDCALLS4 else 0 end) + sum(case when a.ACDCALLS5 IS NOT NULL then a.ACDCALLS5 else 0 end) + sum(case when a.ACDCALLS6 IS NOT NULL then a.ACDCALLS6 else 0 end) + sum(case when a.ACDCALLS7 IS NOT NULL then a.ACDCALLS7 else 0 end) + sum(case when a.ACDCALLS8 IS NOT NULL then a.ACDCALLS8 else 0 end) + sum(case when a.ACDCALLS9 IS NOT NULL then a.ACDCALLS9 else 0 end))/(sum(case when a.CALLSOFFERED IS NOT NULL then a.CALLSOFFERED else 0 end))*100, 1) as 'SL-90 (%)',
+0 as "ll",
+100 as "ul" from
+(SELECT * FROM DataWarehouse.vw_cms_hskill)a
+inner join
+(select * from gxccivr.dim_time)b
+on a.TIME_15=b.TIME_15
+WHERE UNIX_TIMESTAMP(STR_TO_DATE(concat(a.DATE_NAME), "%Y%m%d%H%i")) BETWEEN $__unixEpochFrom() and $__unixEpochTo()
+group by a.DATE_ID, b.HOURNO
+order by a.DATE_ID asc, b.HOURNO asc
+
+
+----------------------------------------------
+HOURLY TREND - HOURLY AGENT STATISTICS
+----------------------------------------------
+
+select concat(STR_TO_DATE(a.DATE_ID, "%Y%m%d")," ") as 'DATE', 
+b.HOURNO as 'HOUR', 
+count(Distinct a.LOGID) as 'Login',
+sum(case when a.ACDTIME IS NOT NULL then a.ACDTIME else 0 end) as 'Talk',
+(sum(case when a.AUXTIME1 IS NOT NULL then a.AUXTIME1 else 0 end) + sum(case when a.AUXTIME2 IS NOT NULL then a.AUXTIME2 else 0 end)) as 'Break',
+sum(case when a.AUXTIME3 IS NOT NULL then a.AUXTIME3 else 0 end) as 'Training',
+sum(case when a.AVAILTIME IS NOT NULL then a.AVAILTIME else 0 end) as 'Idle',
+(sum(case when a.AVAILTIME IS NOT NULL then a.AVAILTIME else 0 end) + sum(case when a.ACDTIME IS NOT NULL then a.ACDTIME else 0 end) + sum(case when a.ACWTIME IS NOT NULL then a.ACWTIME else 0 end) + sum(case when a.HOLDTIME IS NOT NULL then a.HOLDTIME else 0 end)) as 'Prod',
+(sum(case when a.AUXTIME1 IS NOT NULL then a.AUXTIME1 else 0 end) + sum(case when a.AUXTIME2 IS NOT NULL then a.AUXTIME2 else 0 end) + sum(case when a.AUXTIME3 IS NOT NULL then a.AUXTIME3 else 0 end) + sum(case when a.AUXTIME4 IS NOT NULL then a.AUXTIME4 else 0 end) + sum(case when a.AUXTIME5 IS NOT NULL then a.AUXTIME5 else 0 end) + sum(case when a.AUXTIME6 IS NOT NULL then a.AUXTIME6 else 0 end) + sum(case when a.AUXTIME7 IS NOT NULL then a.AUXTIME7 else 0 end)) as 'Non-Prod.' from
+(SELECT * FROM DataWarehouse.cms_hagent)a
+right join
+(select * from gxccivr.dim_time)b
+on a.TIME_15=b.TIME_15
+WHERE UNIX_TIMESTAMP(STR_TO_DATE(concat(a.DATE_ID,a.TIME_15), "%Y%m%d%H%i")) BETWEEN $__unixEpochFrom() and $__unixEpochTo()
+group by a.DATE_ID, b.HOURNO
+order by a.DATE_ID asc, b.HOURNO asc
+
+
+----------------------------------------------
+HOURLY TREND - Call Volume Distribution
+----------------------------------------------
+
+SELECT concat(DATE_FORMAT(STR_TO_DATE(a.DATE_ID, "%Y%m%d"), "%d %b"), "-", b.HOURNO, "") as 'T',
+sum(case when CALLSOFFERED IS NOT NULL then CALLSOFFERED else 0 end) as 'Offered',
+sum(case when ACDCALLS IS NOT NULL then ACDCALLS else 0 end) as 'ACD', 
+sum(case when ABNCALLS IS NOT NULL then ABNCALLS else 0 end) as 'ABN' from 
+(SELECT * FROM DataWarehouse.cms_hskill)a
+inner join
+(select * from gxccivr.dim_time)b
+on a.TIME_15=b.TIME_15
+WHERE UNIX_TIMESTAMP(STR_TO_DATE(concat(a.DATE_ID, b.HOURNO), "%Y%m%d%H")) BETWEEN $__unixEpochFrom() and $__unixEpochTo()
+group by a.DATE_ID, b.HOURNO order by a.DATE_ID, b.HOURNO
+
+
+----------------------------------------------
+HOURLY TREND - Prod. & Non-Prod. (in Hours)
+----------------------------------------------
+
+SELECT concat(DATE_FORMAT(STR_TO_DATE(a.DATE_ID, "%Y%m%d"), "%d %b"), "-", b.HOURNO, "") as 'T',
+round((sum(a.AVAILTIME) + sum(a.ACDTIME) + sum(a.ACWTIME) + sum(a.HOLDTIME))/3600, 1) as 'Prod.',
+round((sum(a.AUXTIME1) + sum(a.AUXTIME2) + sum(a.AUXTIME3) + sum(a.AUXTIME4) + sum(a.AUXTIME5) + sum(a.AUXTIME6) + sum(a.AUXTIME7))/3600, 1) as 'Non-Prod.' from 
+(SELECT * FROM DataWarehouse.cms_hagent)a
+inner join
+(select * from gxccivr.dim_time)b
+on a.TIME_15=b.TIME_15
+WHERE UNIX_TIMESTAMP(STR_TO_DATE(concat(a.DATE_ID, b.HOURNO), "%Y%m%d%H")) BETWEEN $__unixEpochFrom() and $__unixEpochTo()
+group by a.DATE_ID, b.HOURNO order by a.DATE_ID, b.HOURNO
+
+
+----------------------------------------------
+ACR Graph
+----------------------------------------------
+
+SELECT STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i") as 'time',
+round(sum(ACDCALLS)/sum(CALLSOFFERED), 1) as 'ACR'
+from DataWarehouse.cms_hskill
+WHERE UNIX_TIMESTAMP(STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i")) BETWEEN $__unixEpochFrom() and $__unixEpochTo()
+group by DATE_ID, TIME_15 order by DATE_ID, TIME_15
+
+
+----------------------------------------------
+AHT (in Mins) Graph
+----------------------------------------------
+
+SELECT STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i") as 'time',
+round((sum(ACDTIME) + sum(ACWTIME) + sum(HOLDTIME))/60, 1) as 'AHT (in Mins)'
+from DataWarehouse.cms_hskill
+WHERE UNIX_TIMESTAMP(STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i")) BETWEEN $__unixEpochFrom() and $__unixEpochTo()
+group by DATE_ID, TIME_15 order by DATE_ID, TIME_15
+
+
+----------------------------------------------
+Service Level Graph
+----------------------------------------------
+
+SELECT STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i") as 'time',
+round(((sum(ACDCALLS1) + sum(ACDCALLS2) + sum(ACDCALLS3))/sum(CALLSOFFERED))*100, 1) as 'SL-20',
+round(((sum(ACDCALLS1) + sum(ACDCALLS2) + sum(ACDCALLS3) + sum(ACDCALLS4) + sum(ACDCALLS5))/sum(CALLSOFFERED))*100, 1) as 'SL-40',
+round(((sum(ACDCALLS1) + sum(ACDCALLS2) + sum(ACDCALLS3) + sum(ACDCALLS4) + sum(ACDCALLS5) + sum(ACDCALLS6) + sum(ACDCALLS7) + sum(ACDCALLS8) + sum(ACDCALLS9))/sum(CALLSOFFERED))*100, 1) as 'SL-90' 
+from DataWarehouse.cms_hskill
+WHERE UNIX_TIMESTAMP(STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i")) BETWEEN $__unixEpochFrom() and $__unixEpochTo()
+group by DATE_ID, TIME_15 order by DATE_ID, TIME_15
+
+
+----------------------------------------------
+Unique Agent Login Graph
+----------------------------------------------
+
+SELECT STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i") as 'time',
+count(DISTINCT LOGID) as 'Login'
+from DataWarehouse.cms_hagent
+WHERE UNIX_TIMESTAMP(STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i")) BETWEEN $__unixEpochFrom() and $__unixEpochTo()
+group by STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i")
+ORDER BY STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i")
+
+
+----------------------------------------------
+Agent Activity (in Hours) Graph
+----------------------------------------------
+
+SELECT STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i") as 'time',
+round(sum(case when ACDTIME IS NOT NULL then ACDTIME else 0 end)/3600, 1) as 'Talk',
+round((sum(case when AUXTIME1 IS NOT NULL then AUXTIME1 else 0 end) + sum(case when AUXTIME2 IS NOT NULL then AUXTIME2 else 0 end))/3600, 1) as 'Break', 
+round(sum(case when AUXTIME3 IS NOT NULL then AUXTIME3 else 0 end)/3600, 1) as 'Training',
+round((sum(case when AVAILTIME IS NOT NULL then AVAILTIME else 0 end))/3600, 1) as 'Idle'
+from DataWarehouse.cms_hagent
+WHERE UNIX_TIMESTAMP(STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i")) BETWEEN $__unixEpochFrom() and $__unixEpochTo()
+group by STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i")
+ORDER BY STR_TO_DATE(concat(DATE_ID,TIME_15), "%Y%m%d%H%i")
